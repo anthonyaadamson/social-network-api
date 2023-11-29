@@ -1,14 +1,15 @@
-const { Thought, User } = require('../models');
+const { Thought, User, Reaction } = require('../models');
 
 module.exports = {
   // Function to get all of the applications by invoking the find() method with no arguments.
   // Then we return the results as JSON, and catch any errors. Errors are sent as JSON with a message and a 500 status code
   async getThought(req, res) {
     try {
-      const thoughts = await Thoughts.find();
+      const thoughts = await Thought.find();
       res.json(thoughts);
     } catch (err) {
       res.status(500).json(err);
+      console.error(err);
     }
   },
   // Gets a single application using the findOneAndUpdate method. We pass in the ID of the application and then respond with it, or an error if not found
@@ -85,7 +86,7 @@ module.exports = {
 
       if (!user) {
         return res.status(404).json({
-          message: 'Thought created but no user with this id!',
+          message: 'Could not find a user with this ID',
         });
       }
 
@@ -94,5 +95,51 @@ module.exports = {
       res.status(500).json(err);
     }
   },
-  // Adds a tag to an application. This method is unique in that we add the entire body of the tag rather than the ID with the mongodb $addToSet operator.
- 
+
+  async addReaction(req, res) {
+    try {
+      const reaction = await Reaction.create(req.body);
+      const user = await User.findOneAndUpdate(
+        { _id: req.body.userId },
+        { $addToSet: { reactions: reaction._id } },
+        { new: true }
+      );
+
+      if (!user) {
+        return res.status(404).json({
+          message: 'Reaction created, but found no user with that ID',
+        })
+      }
+
+      res.json('Created the Reaction 🎉');
+    } catch (err) {
+      console.log(err);
+      res.status(500).json(err);
+    }
+  },
+  async removeReaction(req, res) {
+    try {
+      const reaction = await Reaction.findOneAndRemove({ _id: req.params.reactionId });
+
+      if (!reaction) {
+        return res.status(404).json({ message: 'No reaction with this id!' });
+      }
+
+      const user = await User.findOneAndUpdate(
+        { reactions: req.params.reactionId },
+        { $pull: { reactions: req.params.reactionId } },
+        { new: true }
+      );
+
+      if (!user) {
+        return res.status(404).json({
+          message: 'Could not find a user with this ID',
+        });
+      }
+
+      res.json({ message: 'Thought successfully deleted!' });
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+};

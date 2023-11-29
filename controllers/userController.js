@@ -4,10 +4,11 @@ module.exports = {
   // Get all users
   async getUsers(req, res) {
     try {
-      const users = await User.find();
+      const users = await User.find({});
       res.json(users);
     } catch (err) {
-      res.status(500).json(err);
+      res.status(500)
+      console.error(err);
     }
   },
   // Get a single user
@@ -43,8 +44,26 @@ module.exports = {
         return res.status(404).json({ message: 'No user with that ID' });
       }
 
-      await Thoughts.deleteMany({ _id: { $in: user.thoughts } });
+      await Thought.deleteMany({ _id: { $in: user.thoughts } });
       res.json({ message: 'User and associated thoughts have been deleted!' })
+    } catch (err) {
+      console.error(err)
+      res.status(500).json(err);
+    }
+  },
+  async updateUser(req, res) {
+    try {
+      const user = await User.findOneAndUpdate(
+        { _id: req.params.userId },
+        { $set: req.body },
+        { runValidators: true, new: true }
+      );
+  
+      if (!user) {
+        return res.status(404).json({ message: 'No user with this id!' });
+      }
+  
+      res.json(user);
     } catch (err) {
       res.status(500).json(err);
     }
@@ -52,7 +71,7 @@ module.exports = {
 //
 async addFriend(req, res) {
   try {
-    const Friend = await User.findOneAndUpdate(
+    const friend = await User.findOneAndUpdate(
       { _id: req.params.friendId },
       { $addToSet: { tags: req.body } },
       { runValidators: true, new: true }
