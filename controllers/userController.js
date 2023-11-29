@@ -71,9 +71,9 @@ module.exports = {
 //
 async addFriend(req, res) {
   try {
-    const friend = await User.findOneAndUpdate(
-      { _id: req.params.friendId },
-      { $addToSet: { tags: req.body } },
+    const user = await User.findOneAndUpdate(
+      { _id: req.params.userId },
+      { $addToSet: { friends: req.params.friendId } },
       { runValidators: true, new: true }
     );
 
@@ -89,9 +89,9 @@ async addFriend(req, res) {
 // Remove friend from user list. This method finds the friend based on ID. It then updates the friends array associated with the user in question by removing it's friendId from the friends array.
 async removeFriend(req, res) {
   try {
-    const friend = await User.findOneAndUpdate(
-      { _id: req.params.friendId },
-      { $pull: { friends: { friendId: req.params.friendId } } },
+    const user = await User.findOneAndUpdate(
+      { _id: req.params.userId },
+      { $pull: { friend: { friendId: req.params.friendId } } },
       { runValidators: true, new: true }
     );
 
