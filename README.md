@@ -37,4 +37,7 @@ The routes used in this API will all be behind the "localhost:3001/api/" route t
  - Update thought
  - Delete thought 
 
-# Demonstration
+# Demonstration Video
+
+https://drive.google.com/file/d/1wyy2F4Puh6pP_GjfR8-CMtC5UOZhgJzI/view
+
